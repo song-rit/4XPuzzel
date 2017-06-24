@@ -2,22 +2,18 @@ package com.example.awidcha.numbergame.ui.fragment;
 
 
 import android.app.Dialog;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,9 +23,13 @@ import com.example.awidcha.numbergame.constants.Constant;
 import com.example.awidcha.numbergame.utils.CheckNetworkConnection;
 import com.example.awidcha.numbergame.utils.OkHttpRequest;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
-public class GameFragment extends DialogFragment {
+public class GameFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -42,8 +42,6 @@ public class GameFragment extends DialogFragment {
 
     private Dialog mDialog;
 
-
-
     // Declare field http handler
     private String mThreadName = "httpThread";
     private Handler mHttpHandler;
@@ -51,6 +49,8 @@ public class GameFragment extends DialogFragment {
     private HandlerThread mHttpThread;
 
     private FragmentActivity mActivity;
+
+    private ProgressDialog mProgressDialog;
 
     public GameFragment() {
         // Required empty public constructor
@@ -78,17 +78,14 @@ public class GameFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_game, container, false);;
-
+        View rootView = inflater.inflate(R.layout.fragment_game, container, false);
         infixView(rootView);
-
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         mActivity = getActivity();
     }
 
@@ -96,40 +93,24 @@ public class GameFragment extends DialogFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mRandomNumber = getRandomNumber();
+        // Get random number from API
+        requestNumber();
         mButtonOk.setOnClickListener(buttonOkOnClickListener());
 
-        sendRequest();
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Log.d("Life Cycle", "onCreateDialog");
-
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        mDialog = new Dialog(mActivity);
-//        mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        dialog.setContentView(R.layout.fragment_game_dialog);
-
-        Button restart=(Button)dialog.findViewById(R.id.button_restart);
-
-        restart.setOnClickListener(buttonRestartOnClickListener());
-        return super.onCreateDialog(savedInstanceState);
+    private void showProgressDialog() {
+        mProgressDialog = new ProgressDialog(mActivity, ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.setMessage("กำลังสุ่มตัวเลข");
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
     }
 
-    private int getRandomNumber() {
-        int randomNumber = (int) (Math.random() * 10000);
-        return randomNumber;
-    }
 
     private View.OnClickListener buttonOkOnClickListener() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                showDialog();
 
                 if (mEditText.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
@@ -139,6 +120,8 @@ public class GameFragment extends DialogFragment {
 
                     if (compare) {
                         Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
+                        showDialog();
+
                     } else {
                         if (inputNumber > mRandomNumber) {
                             Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
@@ -151,18 +134,12 @@ public class GameFragment extends DialogFragment {
         };
     }
 
-    private View.OnClickListener buttonRestartOnClickListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(mActivity, "Hello World", Toast.LENGTH_SHORT).show();
-            }
-        };
-    }
-
-    private void sendRequest() {
+    private void requestNumber() {
 
         if (CheckNetworkConnection.isConnectionAvailable(mActivity)) {
+
+            showProgressDialog();
+
             mHttpRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -174,12 +151,26 @@ public class GameFragment extends DialogFragment {
                         String responseJson = (String) msg.obj;
 
                         if (msg.what == 1) {
-                            Toast.makeText(mActivity, responseJson, Toast.LENGTH_SHORT).show();
+
+                            // Parse json random number
+                            JSONObject jsonObject = new JSONObject(responseJson);
+                            jsonObject = jsonObject.getJSONObject("result");
+                            jsonObject = jsonObject.getJSONObject("random");
+                            JSONArray data = jsonObject.getJSONArray("data");
+                            mRandomNumber = data.getInt(0);
+
+                            Toast.makeText(mActivity, "Ready", Toast.LENGTH_SHORT).show();
+
+                            // Hide ProgressDialog
+                            mProgressDialog.dismiss();
 
                         } else {
-//                            updateViewFail();
+                            requestFail();
                         }
                     } catch (IOException e) {
+                        e.printStackTrace();
+                        requestFail();
+                    } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
@@ -197,6 +188,8 @@ public class GameFragment extends DialogFragment {
             mHttpThread.start();
             mHttpHandler = new Handler(mHttpThread.getLooper());
             mHttpHandler.post(mHttpRunnable);
+        } else {
+            requestFail();
         }
     }
 
@@ -205,6 +198,12 @@ public class GameFragment extends DialogFragment {
         GameDialogFragment dialog = new GameDialogFragment();
         //Show GameDialogFragment
         dialog.show(fm, "");
+    }
+
+    private void requestFail() {
+        Toast.makeText(mActivity, "Fail", Toast.LENGTH_SHORT).show();
+        FragmentManager manager = mActivity.getSupportFragmentManager();
+        manager.popBackStack();
     }
 
     private String getRandomRequestBody() {
