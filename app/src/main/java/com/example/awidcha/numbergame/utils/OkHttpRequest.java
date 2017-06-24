@@ -3,14 +3,7 @@ package com.example.awidcha.numbergame.utils;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Message;
-import android.util.Log;
-
-import com.example.awidcha.numbergame.constants.Constant;
-
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -25,7 +18,7 @@ public class OkHttpRequest {
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
-    
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public Message HttpPostMessage(String url, String json) throws IOException {
         Message message = new Message();

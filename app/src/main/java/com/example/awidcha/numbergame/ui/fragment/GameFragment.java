@@ -1,25 +1,36 @@
-package com.example.awidcha.numbergame;
+package com.example.awidcha.numbergame.ui.fragment;
 
+
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.awidcha.numbergame.R;
 import com.example.awidcha.numbergame.constants.Constant;
 import com.example.awidcha.numbergame.utils.CheckNetworkConnection;
 import com.example.awidcha.numbergame.utils.OkHttpRequest;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+public class GameFragment extends Fragment {
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
-    private Button mButtonOk;
+    private String mParam1;
+    private String mParam2;
+
     private EditText mEditText;
+    private Button mButtonOk;
     private int mRandomNumber;
 
 
@@ -29,51 +40,82 @@ public class MainActivity extends AppCompatActivity {
     private Runnable mHttpRunnable;
     private HandlerThread mHttpThread;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    private FragmentActivity mActivity;
 
-        infixView();
+
+    public GameFragment() {
+        // Required empty public constructor
+    }
+
+    public static GameFragment newInstance() {
+        GameFragment fragment = new GameFragment();
+        Bundle args = new Bundle();
+//        args.putString(ARG_PARAM1, param1);
+//        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_game, container, false);;
+
+        infixView(rootView);
+
+        return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mActivity = getActivity();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         mRandomNumber = getRandomNumber();
-        mButtonOk.setOnClickListener(buttonOkClickListener());
+        mButtonOk.setOnClickListener(buttonOkOnClickListener());
 
         sendRequest();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 
     private int getRandomNumber() {
         int randomNumber = (int) (Math.random() * 10000);
         return randomNumber;
     }
 
-    private View.OnClickListener buttonOkClickListener() {
+    private View.OnClickListener buttonOkOnClickListener() {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mEditText.getText().toString().equals("")) {
-                    Toast.makeText(getApplicationContext(), "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
                 } else {
                     int inputNumber = Integer.parseInt(mEditText.getText().toString());
                     boolean compare = mRandomNumber == inputNumber;
 
                     if (compare) {
-                        Toast.makeText(getApplicationContext(), "คุณทายถูก", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
                     } else {
                         if (inputNumber > mRandomNumber) {
-                            Toast.makeText(getApplicationContext(), "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(getApplicationContext(), "คุณทายผิด น้อยไป", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "คุณทายผิด น้อยไป", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -83,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendRequest() {
 
-        if (CheckNetworkConnection.isConnectionAvailable(this)) {
+        if (CheckNetworkConnection.isConnectionAvailable(mActivity)) {
             mHttpRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -95,8 +137,7 @@ public class MainActivity extends AppCompatActivity {
                         String responseJson = (String) msg.obj;
 
                         if (msg.what == 1) {
-
-                            Toast.makeText(getApplicationContext(), responseJson, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, responseJson, Toast.LENGTH_SHORT).show();
 
                         } else {
 //                            updateViewFail();
@@ -122,11 +163,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void infixView() {
-        mButtonOk = (Button) findViewById(R.id.button_ok);
-        mEditText = (EditText) findViewById(R.id.edit_number);
-    }
-
     public String getRandomRequestBody() {
         return "{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
@@ -141,5 +177,10 @@ public class MainActivity extends AppCompatActivity {
                 "    },\n" +
                 "    \"id\": 7573\n" +
                 "}";
+    }
+
+    private void infixView(View rootView) {
+        mButtonOk = (Button) rootView.findViewById(R.id.button_ok);
+        mEditText = (EditText) rootView.findViewById(R.id.edit_number);
     }
 }
