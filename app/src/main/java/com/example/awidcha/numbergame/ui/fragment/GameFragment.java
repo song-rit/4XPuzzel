@@ -1,16 +1,23 @@
 package com.example.awidcha.numbergame.ui.fragment;
 
 
+import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,7 +29,7 @@ import com.example.awidcha.numbergame.utils.OkHttpRequest;
 
 import java.io.IOException;
 
-public class GameFragment extends Fragment {
+public class GameFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -33,6 +40,9 @@ public class GameFragment extends Fragment {
     private Button mButtonOk;
     private int mRandomNumber;
 
+    private Dialog mDialog;
+
+
 
     // Declare field http handler
     private String mThreadName = "httpThread";
@@ -41,7 +51,6 @@ public class GameFragment extends Fragment {
     private HandlerThread mHttpThread;
 
     private FragmentActivity mActivity;
-
 
     public GameFragment() {
         // Required empty public constructor
@@ -93,6 +102,22 @@ public class GameFragment extends Fragment {
         sendRequest();
     }
 
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Log.d("Life Cycle", "onCreateDialog");
+
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        mDialog = new Dialog(mActivity);
+//        mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        dialog.setContentView(R.layout.fragment_game_dialog);
+
+        Button restart=(Button)dialog.findViewById(R.id.button_restart);
+
+        restart.setOnClickListener(buttonRestartOnClickListener());
+        return super.onCreateDialog(savedInstanceState);
+    }
 
     private int getRandomNumber() {
         int randomNumber = (int) (Math.random() * 10000);
@@ -103,6 +128,9 @@ public class GameFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                showDialog();
+
                 if (mEditText.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
                 } else {
@@ -119,6 +147,15 @@ public class GameFragment extends Fragment {
                         }
                     }
                 }
+            }
+        };
+    }
+
+    private View.OnClickListener buttonRestartOnClickListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mActivity, "Hello World", Toast.LENGTH_SHORT).show();
             }
         };
     }
@@ -163,7 +200,14 @@ public class GameFragment extends Fragment {
         }
     }
 
-    public String getRandomRequestBody() {
+    private void showDialog() {
+        FragmentManager fm = getFragmentManager();
+        GameDialogFragment dialog = new GameDialogFragment();
+        //Show GameDialogFragment
+        dialog.show(fm, "");
+    }
+
+    private String getRandomRequestBody() {
         return "{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"method\": \"generateIntegers\",\n" +

@@ -13,7 +13,7 @@
         android:textSize="18dp" />
 
     <Button
-        android:id="@+id/restart"
+        android:id="@+id/button_restart"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="Restart Game" />
