@@ -25,18 +25,15 @@ import android.widget.Toast;
 
 import com.example.awidcha.numbergame.R;
 import com.example.awidcha.numbergame.constants.Constant;
-import com.example.awidcha.numbergame.model.PointModel;
 import com.example.awidcha.numbergame.utils.CheckNetworkConnection;
-import com.example.awidcha.numbergame.utils.DBHelper;
 import com.example.awidcha.numbergame.utils.OkHttpRequest;
+import com.example.awidcha.numbergame.utils.SharePreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameFragment extends Fragment {
 
@@ -46,7 +43,8 @@ public class GameFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private DBHelper mHelper;
+    // Declare field session manager
+    private SharePreferenceManager mPreferenceManager;
 
     private EditText mEditText1;
     private EditText mEditText2;
@@ -54,10 +52,11 @@ public class GameFragment extends Fragment {
     private EditText mEditText4;
 
     private TextView mTextTotal;
-    private TextView mTextFastest;
+    private TextView mTextLeast;
+    private TextView mTextInputNumber;
 
-    private int mTotal;
-    private int mFastest;
+    private int mTotalPoint;
+    private int mLeastPoint;
 
     private Button mButtonOk;
     private int mRandomNumber;
@@ -72,6 +71,7 @@ public class GameFragment extends Fragment {
     private FragmentActivity mActivity;
 
     private ProgressDialog mProgressDialog;
+    private boolean mLeastPointFoundStatus = false;
 
     public GameFragment() {
         // Required empty public constructor
@@ -108,13 +108,22 @@ public class GameFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mActivity = getActivity();
-        mHelper = new DBHelper(mActivity);
-        clearDataBase();
-        initDataBase();
-        updatePoint();
-        List<PointModel> pointModels = new ArrayList<>(mHelper.getAllPoint());
-        PointModel point = pointModels.get(0);
-        Toast.makeText(mActivity, String.valueOf(point.getFastestPoint()), Toast.LENGTH_SHORT).show();
+
+        mPreferenceManager = SharePreferenceManager.getInstance();
+        if (mPreferenceManager.getSharedPreferences() == null) {
+            mPreferenceManager.setSharedPreferences(mActivity.getApplicationContext());
+        }
+        // get languageId
+        mLeastPointFoundStatus = mPreferenceManager.isLeastPointFound();
+
+        if (!mLeastPointFoundStatus) {
+            mPreferenceManager.setLeastPoint(0);
+        } else {
+            mLeastPoint = mPreferenceManager.getLeastPoint();
+        }
+
+        mLeastPoint = mPreferenceManager.getLeastPoint();
+        Toast.makeText(mActivity, String.valueOf(mLeastPoint), Toast.LENGTH_SHORT).show();
 
     }
 
@@ -135,6 +144,8 @@ public class GameFragment extends Fragment {
         mEditText2.setOnFocusChangeListener(getOnFocusChangeListener());
         mEditText3.setOnFocusChangeListener(getOnFocusChangeListener());
         mEditText4.setOnFocusChangeListener(getOnFocusChangeListener());
+
+        updateViewTextViewLeast();
     }
 
     @Override
@@ -165,17 +176,23 @@ public class GameFragment extends Fragment {
                     int inputNumber4 = Integer.parseInt(mEditText4.getText().toString());
 
                     int number = inputNumber1 + inputNumber2 + inputNumber3 + inputNumber4;
+                    mTextInputNumber.setText(String.valueOf(number));
 
+                    //Compare random number with input number
                     boolean compare = mRandomNumber == number;
+
+                    updateViewTextViewTotal();
 
                     if (compare) {
                         Toast.makeText(mActivity, "Congratulations", Toast.LENGTH_SHORT).show();
+
+                        // Save least number to device
+                        if (mTotalPoint < mLeastPoint) {
+                            mPreferenceManager.setLeastPoint(mTotalPoint);
+                        }
+
                         showDialog();
-
                     } else {
-
-                        updateViewTextViewTotal();
-
                         if (number > mRandomNumber) {
                             Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
                         } else {
@@ -188,11 +205,20 @@ public class GameFragment extends Fragment {
     }
 
     private void updateViewTextViewTotal() {
-        mTotal++;
+        mTotalPoint++;
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTextTotal.setText(String.valueOf(mTotal));
+                mTextTotal.setText(String.valueOf(mTotalPoint));
+            }
+        });
+    }
+
+    private void updateViewTextViewLeast() {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTextLeast.setText(String.valueOf(mLeastPoint));
             }
         });
     }
@@ -342,23 +368,6 @@ public class GameFragment extends Fragment {
         };
     }
 
-    private void initDataBase() {
-        PointModel point = new PointModel();
-        point.setFastestPoint("8888");
-        mHelper.addPoint(point);
-    }
-
-    private void updatePoint() {
-        PointModel point = new PointModel();
-        point.setId(0);
-        point.setFastestPoint("11111111");
-        mHelper.updateFriend(point);
-    }
-
-    private void clearDataBase() {
-        mHelper.deleteAllPoint();
-    }
-
     private String getRandomRequestBody() {
         return "{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
@@ -381,7 +390,8 @@ public class GameFragment extends Fragment {
         mEditText2 = (EditText) rootView.findViewById(R.id.edit_number2);
         mEditText3 = (EditText) rootView.findViewById(R.id.edit_number3);
         mEditText4 = (EditText) rootView.findViewById(R.id.edit_number4);
-        mTextFastest = (TextView) rootView.findViewById(R.id.text_view_fastest);
+        mTextLeast = (TextView) rootView.findViewById(R.id.text_view_least);
         mTextTotal = (TextView) rootView.findViewById(R.id.text_view_total);
+        mTextInputNumber = (TextView) rootView.findViewById(R.id.text_input_number);
     }
 }
