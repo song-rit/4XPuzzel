@@ -6,10 +6,11 @@
     android:layout_height="match_parent"
     tools:context="com.example.awidcha.numbergame.ui.activity.SplashScreen">
 
-
-    <ImageView
+    <TextView
+        android:textSize="35sp"
+        android:textColor="@color/orange"
+        android:text="Awidcha"
         android:layout_centerInParent="true"
-        android:src="@mipmap/ic_launcher"
-        android:layout_width="240dp"
-        android:layout_height="320dp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </RelativeLayout>

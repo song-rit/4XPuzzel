@@ -6,11 +6,11 @@
     tools:context="com.example.awidcha.numbergame.ui.fragment.MenuFragment">
 
     <LinearLayout
-        android:gravity="center"
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/text_name"
@@ -31,13 +31,13 @@
             android:textStyle="bold" />
 
         <Button
-            android:layout_marginTop="30dp"
             android:id="@+id/button_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/text_name"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/circle_dialog_button_bg"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/selector_button_circle"
             android:text="Ready"
             android:textColor="@color/orange"
             android:textSize="20sp" />

@@ -11,5 +11,6 @@
     <color name="orange">#f1592a</color>
     <color name="white">#ffffff</color>
     <color name="gray">#999999</color>
+    <color name="whiteGrey">#ccc</color>
 
 </resources>

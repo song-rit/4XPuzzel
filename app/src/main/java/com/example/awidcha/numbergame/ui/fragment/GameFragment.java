@@ -3,7 +3,9 @@ package com.example.awidcha.numbergame.ui.fragment;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.inputmethodservice.Keyboard;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -13,10 +15,14 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -40,7 +46,12 @@ public class GameFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private EditText mEditText;
+    private EditText mEditText1;
+    private EditText mEditText2;
+    private EditText mEditText3;
+    private EditText mEditText4;
+
+    //    private EditText mEditText;
     private Button mButtonOk;
     private int mRandomNumber;
 
@@ -101,12 +112,22 @@ public class GameFragment extends Fragment {
         requestNumber();
         mButtonOk.setOnClickListener(buttonOkOnClickListener());
 
+        mEditText1.addTextChangedListener(getAddTextChangedListener(mEditText1, mEditText2));
+        mEditText2.addTextChangedListener(getAddTextChangedListener(mEditText2, mEditText3));
+        mEditText3.addTextChangedListener(getAddTextChangedListener(mEditText3, mEditText4));
+        mEditText4.addTextChangedListener(getAddTextChangedListener(mEditText4, mEditText4));
+
+        mEditText1.setOnFocusChangeListener(getOnFocusChangeListener());
+        mEditText2.setOnFocusChangeListener(getOnFocusChangeListener());
+        mEditText3.setOnFocusChangeListener(getOnFocusChangeListener());
+        mEditText4.setOnFocusChangeListener(getOnFocusChangeListener());
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("GameFragement", "onResume");
+        Log.d("GameFragment", "onResume");
     }
 
     private void showProgressDialog() {
@@ -122,18 +143,24 @@ public class GameFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                if (mEditText.getText().toString().equals("")) {
+                if (mEditText1.getText().toString().equals("") && mEditText2.getText().toString().equals("") && mEditText3.getText().toString().equals("") && mEditText4.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
                 } else {
-                    int inputNumber = Integer.parseInt(mEditText.getText().toString());
-                    boolean compare = mRandomNumber == inputNumber;
+                    int inputNumber1 = Integer.parseInt(mEditText1.getText().toString()) * 1000;
+                    int inputNumber2 = Integer.parseInt(mEditText2.getText().toString()) * 100;
+                    int inputNumber3 = Integer.parseInt(mEditText3.getText().toString()) * 10;
+                    int inputNumber4 = Integer.parseInt(mEditText4.getText().toString());
+
+                    int number = inputNumber1 + inputNumber2 + inputNumber3 + inputNumber4;
+
+                    boolean compare = mRandomNumber == number;
 
                     if (compare) {
                         Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
                         showDialog();
 
                     } else {
-                        if (inputNumber > mRandomNumber) {
+                        if (number > mRandomNumber) {
                             Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(mActivity, "คุณทายผิด น้อยไป", Toast.LENGTH_SHORT).show();
@@ -169,7 +196,11 @@ public class GameFragment extends Fragment {
                             JSONArray data = jsonObject.getJSONArray("data");
                             mRandomNumber = data.getInt(0);
 
-                            Toast.makeText(mActivity, "Ready", Toast.LENGTH_SHORT).show();
+                            // Focus first input number
+                            focusKeyBoardInput(mEditText1);
+
+                            Toast.makeText(mActivity, String.valueOf(mRandomNumber), Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(mActivity, "Ready", Toast.LENGTH_SHORT).show();
 
                             // Hide ProgressDialog
                             mProgressDialog.dismiss();
@@ -215,9 +246,76 @@ public class GameFragment extends Fragment {
 
     private void requestFail() {
         mProgressDialog.dismiss();
+
+        hideKeyBoardInput();
+
         Toast.makeText(mActivity, "Fail", Toast.LENGTH_SHORT).show();
         FragmentManager manager = mActivity.getSupportFragmentManager();
         manager.popBackStack(MenuFragment.S_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    }
+
+    public void hideKeyBoardInput() {
+        View view = mActivity.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    public void focusKeyBoardInput(final EditText e) {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                e.requestFocus();
+                InputMethodManager imm = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(e, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+    }
+
+    private TextWatcher getAddTextChangedListener(final EditText current, final EditText nextFocus) {
+        return new TextWatcher() {
+            CharSequence before;
+            CharSequence changed;
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                current.getText().clear();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if (!s.toString().equals("") && nextFocus.getText().toString().equals("")) {
+//                    Toast.makeText(getContext(), s.toString(), Toast.LENGTH_SHORT).show();
+                    focusKeyBoardInput(nextFocus);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+    }
+
+    private View.OnFocusChangeListener getOnFocusChangeListener() {
+        return new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+//                ((EditText) v).getText().clear();
+                if (hasFocus)
+                    ((EditText) v).setText("");
+
+//                if (mEditText1.getText().toString().equals("")) {
+//                    focusKeyBoardInput(mEditText1);
+//                } else if (mEditText2.getText().toString().equals("")) {
+//                    focusKeyBoardInput(mEditText2);
+//                } else if (mEditText3.getText().toString().equals("")) {
+//                    focusKeyBoardInput(mEditText3);
+//                }
+            }
+        };
     }
 
     private String getRandomRequestBody() {
@@ -238,6 +336,11 @@ public class GameFragment extends Fragment {
 
     private void infixView(View rootView) {
         mButtonOk = (Button) rootView.findViewById(R.id.button_ok);
-        mEditText = (EditText) rootView.findViewById(R.id.edit_number);
+//        mEditText = (EditText) rootView.findViewById(R.id.edit_number);
+
+        mEditText1 = (EditText) rootView.findViewById(R.id.edit_number1);
+        mEditText2 = (EditText) rootView.findViewById(R.id.edit_number2);
+        mEditText3 = (EditText) rootView.findViewById(R.id.edit_number3);
+        mEditText4 = (EditText) rootView.findViewById(R.id.edit_number4);
     }
 }
