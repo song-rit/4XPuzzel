@@ -2,23 +2,24 @@ package com.example.awidcha.numbergame.ui.fragment;
 
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.example.awidcha.numbergame.R;
+import com.example.awidcha.numbergame.utils.CustomDialogFragment;
+import com.example.awidcha.numbergame.utils.MyCallBack;
 
 public class GameDialogFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "param1";
@@ -29,6 +30,23 @@ public class GameDialogFragment extends DialogFragment {
 
     private String mParam1;
     private String mParam2;
+
+
+    private OnAddFriendListener callback;
+
+    public interface OnAddFriendListener {
+        public void onAddFriendSubmit(String friendEmail);
+    }
+
+
+    OnSubmitListener mListener;
+
+    interface OnSubmitListener {
+        void setOnSubmitListener(String str);
+    }
+
+    ;
+
 
     public GameDialogFragment() {
         // Required empty public constructor
@@ -41,6 +59,16 @@ public class GameDialogFragment extends DialogFragment {
 //        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
+        callback = (OnAddFriendListener) getTargetFragment();
+
     }
 
     @Override
@@ -64,6 +92,25 @@ public class GameDialogFragment extends DialogFragment {
         return dialog;
     }
 
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        callback = (OnAddFriendListener) getTargetFragment();
+//        callback.onAddFriendSubmit("hello world");
+        FragmentManager fm = getFragmentManager();
+        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        Fragment fragment = GameFragment.newInstance();
+        FragmentManager manager = getFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.replace(R.id.fragment_main, fragment);
+        transaction.addToBackStack(MenuFragment.S_TAG);
+        transaction.commit();
+
+
+
+    }
 
     private View.OnClickListener buttonRestartOnClickListener() {
         return new View.OnClickListener() {

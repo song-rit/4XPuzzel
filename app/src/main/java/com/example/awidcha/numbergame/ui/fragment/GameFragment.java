@@ -3,14 +3,17 @@ package com.example.awidcha.numbergame.ui.fragment;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +32,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class GameFragment extends Fragment {
+public class GameFragment extends Fragment implements GameDialogFragment.OnAddFriendListener {
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -99,6 +103,12 @@ public class GameFragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("GameFragement", "onResume");
+    }
+
     private void showProgressDialog() {
         mProgressDialog = new ProgressDialog(mActivity, ProgressDialog.STYLE_SPINNER);
         mProgressDialog.setMessage("กำลังสุ่มตัวเลข");
@@ -111,7 +121,7 @@ public class GameFragment extends Fragment {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                showDialog();
                 if (mEditText.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
                 } else {
@@ -120,7 +130,7 @@ public class GameFragment extends Fragment {
 
                     if (compare) {
                         Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
-                        showDialog();
+//                        showDialog();
 
                     } else {
                         if (inputNumber > mRandomNumber) {
@@ -226,4 +236,15 @@ public class GameFragment extends Fragment {
         mButtonOk = (Button) rootView.findViewById(R.id.button_ok);
         mEditText = (EditText) rootView.findViewById(R.id.edit_number);
     }
+
+    @Override
+    public void onAddFriendSubmit(String friendEmail) {
+        Toast.makeText(mActivity, friendEmail, Toast.LENGTH_SHORT).show();
+    }
+
+//    @Override
+//    public void onDismiss(DialogInterface dialog) {
+//        super.onDismiss(dialog);
+//        Log.d("sfsfsdf", "sdfsdfsdfsdf");
+//    }
 }
