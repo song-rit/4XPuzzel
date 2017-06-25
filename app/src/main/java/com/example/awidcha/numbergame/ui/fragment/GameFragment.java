@@ -1,35 +1,33 @@
 package com.example.awidcha.numbergame.ui.fragment;
 
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.inputmethodservice.Keyboard;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.awidcha.numbergame.R;
 import com.example.awidcha.numbergame.constants.Constant;
+import com.example.awidcha.numbergame.model.PointModel;
 import com.example.awidcha.numbergame.utils.CheckNetworkConnection;
+import com.example.awidcha.numbergame.utils.DBHelper;
 import com.example.awidcha.numbergame.utils.OkHttpRequest;
 
 import org.json.JSONArray;
@@ -37,6 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameFragment extends Fragment {
 
@@ -46,16 +46,22 @@ public class GameFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private DBHelper mHelper;
+
     private EditText mEditText1;
     private EditText mEditText2;
     private EditText mEditText3;
     private EditText mEditText4;
 
-    //    private EditText mEditText;
+    private TextView mTextTotal;
+    private TextView mTextFastest;
+
+    private int mTotal;
+    private int mFastest;
+
     private Button mButtonOk;
     private int mRandomNumber;
 
-    private Dialog mDialog;
 
     // Declare field http handler
     private String mThreadName = "httpThread";
@@ -102,6 +108,14 @@ public class GameFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mActivity = getActivity();
+        mHelper = new DBHelper(mActivity);
+        clearDataBase();
+        initDataBase();
+        updatePoint();
+        List<PointModel> pointModels = new ArrayList<>(mHelper.getAllPoint());
+        PointModel point = pointModels.get(0);
+        Toast.makeText(mActivity, String.valueOf(point.getFastestPoint()), Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
@@ -121,7 +135,6 @@ public class GameFragment extends Fragment {
         mEditText2.setOnFocusChangeListener(getOnFocusChangeListener());
         mEditText3.setOnFocusChangeListener(getOnFocusChangeListener());
         mEditText4.setOnFocusChangeListener(getOnFocusChangeListener());
-
     }
 
     @Override
@@ -132,7 +145,7 @@ public class GameFragment extends Fragment {
 
     private void showProgressDialog() {
         mProgressDialog = new ProgressDialog(mActivity, ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setMessage("กำลังสุ่มตัวเลข");
+        mProgressDialog.setMessage("Random number...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
     }
@@ -156,10 +169,13 @@ public class GameFragment extends Fragment {
                     boolean compare = mRandomNumber == number;
 
                     if (compare) {
-                        Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity, "Congratulations", Toast.LENGTH_SHORT).show();
                         showDialog();
 
                     } else {
+
+                        updateViewTextViewTotal();
+
                         if (number > mRandomNumber) {
                             Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
                         } else {
@@ -169,6 +185,16 @@ public class GameFragment extends Fragment {
                 }
             }
         };
+    }
+
+    private void updateViewTextViewTotal() {
+        mTotal++;
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTextTotal.setText(String.valueOf(mTotal));
+            }
+        });
     }
 
     private void requestNumber() {
@@ -240,7 +266,7 @@ public class GameFragment extends Fragment {
 
         //Show GameDialogFragment
         dialog.setCancelable(false);
-        dialog.show(fm, "End Game");
+        dialog.show(fm, "EndGame");
 
     }
 
@@ -275,8 +301,6 @@ public class GameFragment extends Fragment {
 
     private TextWatcher getAddTextChangedListener(final EditText current, final EditText nextFocus) {
         return new TextWatcher() {
-            CharSequence before;
-            CharSequence changed;
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -318,6 +342,23 @@ public class GameFragment extends Fragment {
         };
     }
 
+    private void initDataBase() {
+        PointModel point = new PointModel();
+        point.setFastestPoint("8888");
+        mHelper.addPoint(point);
+    }
+
+    private void updatePoint() {
+        PointModel point = new PointModel();
+        point.setId(0);
+        point.setFastestPoint("11111111");
+        mHelper.updateFriend(point);
+    }
+
+    private void clearDataBase() {
+        mHelper.deleteAllPoint();
+    }
+
     private String getRandomRequestBody() {
         return "{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
@@ -336,11 +377,11 @@ public class GameFragment extends Fragment {
 
     private void infixView(View rootView) {
         mButtonOk = (Button) rootView.findViewById(R.id.button_ok);
-//        mEditText = (EditText) rootView.findViewById(R.id.edit_number);
-
         mEditText1 = (EditText) rootView.findViewById(R.id.edit_number1);
         mEditText2 = (EditText) rootView.findViewById(R.id.edit_number2);
         mEditText3 = (EditText) rootView.findViewById(R.id.edit_number3);
         mEditText4 = (EditText) rootView.findViewById(R.id.edit_number4);
+        mTextFastest = (TextView) rootView.findViewById(R.id.text_view_fastest);
+        mTextTotal = (TextView) rootView.findViewById(R.id.text_view_total);
     }
 }

@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -18,8 +17,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.example.awidcha.numbergame.R;
-import com.example.awidcha.numbergame.utils.CustomDialogFragment;
-import com.example.awidcha.numbergame.utils.MyCallBack;
 
 public class GameDialogFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "param1";
