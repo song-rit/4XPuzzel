@@ -31,7 +31,7 @@ Win Screen
 
 2.Desing UI
 
-3.wire frame mapping
+3.Wire frame mapping
 
 4.Find Information
 
