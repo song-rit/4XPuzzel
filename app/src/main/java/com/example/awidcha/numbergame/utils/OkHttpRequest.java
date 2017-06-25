@@ -3,7 +3,9 @@ package com.example.awidcha.numbergame.utils;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Message;
+
 import java.io.IOException;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,7 +37,7 @@ public class OkHttpRequest {
                 .build();
         try (Response response = client.newCall(request).execute()) {
 
-            if(response.isSuccessful()) {
+            if (response.isSuccessful()) {
                 message.obj = response.body().string();
                 message.what = 1;
             } else {

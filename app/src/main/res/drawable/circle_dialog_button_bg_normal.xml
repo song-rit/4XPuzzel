@@ -12,7 +12,7 @@
     <item>
         <shape android:shape="oval">
             <size android:width="150dp" android:height="150dp" />
-            <solid android:color="@color/white" />
+            <solid android:color="@color/whiteGrey" />
 
             <padding android:bottom="20dp" android:left="20dp" android:right="20dp" android:top="20dp" />
         </shape>

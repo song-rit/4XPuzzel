@@ -52,7 +52,8 @@ public class MenuFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_menu, container, false);;
+        View rootView = inflater.inflate(R.layout.fragment_menu, container, false);
+        ;
         infixView(rootView);
         return rootView;
     }

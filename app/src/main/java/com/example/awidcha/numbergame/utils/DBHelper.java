@@ -105,7 +105,7 @@ public class DBHelper extends SQLiteOpenHelper {
     //UPDATE
     public void updateFriend(PointModel point) {
 
-        sqLiteDatabase  = this.getWritableDatabase();
+        sqLiteDatabase = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(Point.Column.ID, point.getId());
@@ -114,7 +114,7 @@ public class DBHelper extends SQLiteOpenHelper {
         int row = sqLiteDatabase.update(Point.TABLE,
                 values,
                 Point.Column.ID + " = ? ",
-                new String[] { String.valueOf(point.getId()) });
+                new String[]{String.valueOf(point.getId())});
 
         sqLiteDatabase.close();
     }

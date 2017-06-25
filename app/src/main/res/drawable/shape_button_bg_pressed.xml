@@ -2,16 +2,14 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid
-        android:color="@color/gray" />
+    <solid android:color="@color/whiteGrey" />
 
-    <corners
-        android:radius="@dimen/dialog_button_radius" />
+    <corners android:radius="@dimen/dialog_button_radius" />
 
     <padding
+        android:bottom="@dimen/dialog_button_padding_vertical"
         android:left="@dimen/dialog_button_padding_horizontal"
         android:right="@dimen/dialog_button_padding_horizontal"
-        android:top="@dimen/dialog_button_padding_vertical"
-        android:bottom="@dimen/dialog_button_padding_vertical" />
+        android:top="@dimen/dialog_button_padding_vertical" />
 
 </shape>

@@ -72,6 +72,7 @@ public class GameFragment extends Fragment {
 
     private ProgressDialog mProgressDialog;
     private boolean mLeastPointFoundStatus = false;
+    private int mNumber;
 
     public GameFragment() {
         // Required empty public constructor
@@ -123,7 +124,7 @@ public class GameFragment extends Fragment {
         }
 
         mLeastPoint = mPreferenceManager.getLeastPoint();
-        Toast.makeText(mActivity, String.valueOf(mLeastPoint), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mActivity, String.valueOf(mLeastPoint), Toast.LENGTH_SHORT).show();
 
     }
 
@@ -131,7 +132,7 @@ public class GameFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Get random number from API
+        // Get random mNumber from API
         requestNumber();
         mButtonOk.setOnClickListener(buttonOkOnClickListener());
 
@@ -156,7 +157,7 @@ public class GameFragment extends Fragment {
 
     private void showProgressDialog() {
         mProgressDialog = new ProgressDialog(mActivity, ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setMessage("Random number...");
+        mProgressDialog.setMessage("Random Number...");
         mProgressDialog.setCancelable(false);
         mProgressDialog.show();
     }
@@ -168,35 +169,35 @@ public class GameFragment extends Fragment {
             public void onClick(View v) {
 
                 if (mEditText1.getText().toString().equals("") && mEditText2.getText().toString().equals("") && mEditText3.getText().toString().equals("") && mEditText4.getText().toString().equals("")) {
-                    Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, "Please enter the numbers", Toast.LENGTH_SHORT).show();
                 } else {
                     int inputNumber1 = Integer.parseInt(mEditText1.getText().toString()) * 1000;
                     int inputNumber2 = Integer.parseInt(mEditText2.getText().toString()) * 100;
                     int inputNumber3 = Integer.parseInt(mEditText3.getText().toString()) * 10;
                     int inputNumber4 = Integer.parseInt(mEditText4.getText().toString());
 
-                    int number = inputNumber1 + inputNumber2 + inputNumber3 + inputNumber4;
-                    mTextInputNumber.setText(String.valueOf(number));
+                    mNumber = inputNumber1 + inputNumber2 + inputNumber3 + inputNumber4;
+                    mTextInputNumber.setText(String.valueOf(mNumber));
 
-                    //Compare random number with input number
-                    boolean compare = mRandomNumber == number;
+                    //Compare random mNumber with input mNumber
+                    boolean compare = mRandomNumber == mNumber;
 
                     updateViewTextViewTotal();
 
                     if (compare) {
                         Toast.makeText(mActivity, "Congratulations", Toast.LENGTH_SHORT).show();
 
-                        // Save least number to device
+                        // Save least mNumber to device
                         if (mTotalPoint < mLeastPoint) {
                             mPreferenceManager.setLeastPoint(mTotalPoint);
                         }
 
                         showDialog();
                     } else {
-                        if (number > mRandomNumber) {
-                            Toast.makeText(mActivity, "คุณทายผิด เยอะไป", Toast.LENGTH_SHORT).show();
+                        if (mNumber > mRandomNumber) {
+                            Toast.makeText(mActivity, "Invalid, Less than this", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(mActivity, "คุณทายผิด น้อยไป", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "Invalid, More than this", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -241,18 +242,17 @@ public class GameFragment extends Fragment {
 
                         if (msg.what == 1) {
 
-                            // Parse json random number
+                            // Parse json random mNumber
                             JSONObject jsonObject = new JSONObject(responseJson);
                             jsonObject = jsonObject.getJSONObject("result");
                             jsonObject = jsonObject.getJSONObject("random");
                             JSONArray data = jsonObject.getJSONArray("data");
                             mRandomNumber = data.getInt(0);
 
-                            // Focus first input number
+                            // Focus first input mNumber
                             focusKeyBoardInput(mEditText1);
 
-                            Toast.makeText(mActivity, String.valueOf(mRandomNumber), Toast.LENGTH_SHORT).show();
-//                            Toast.makeText(mActivity, "Ready", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mActivity, "Ready", Toast.LENGTH_SHORT).show();
 
                             // Hide ProgressDialog
                             mProgressDialog.dismiss();
@@ -287,8 +287,16 @@ public class GameFragment extends Fragment {
     }
 
     private void showDialog() {
+
+        Bundle args = new Bundle();
+        args.putInt("number", mNumber);
+        args.putInt("leastPoint", mLeastPoint);
+        args.putInt("totalPoint", mTotalPoint);
+
+        GameDialogFragment dialog = GameDialogFragment.newInstance(mNumber, mLeastPoint, mTotalPoint);
+
+        dialog.setArguments(args);
         FragmentManager fm = getFragmentManager();
-        GameDialogFragment dialog = new GameDialogFragment();
 
         //Show GameDialogFragment
         dialog.setCancelable(false);
