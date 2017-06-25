@@ -38,7 +38,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="30dp"
             android:background="@drawable/selector_button_circle"
-            android:text="Ready"
+            android:text="Go"
             android:textColor="@color/orange"
             android:textSize="20sp" />
     </LinearLayout>

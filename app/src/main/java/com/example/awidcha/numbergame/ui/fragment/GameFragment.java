@@ -168,7 +168,7 @@ public class GameFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                if (mEditText1.getText().toString().equals("") && mEditText2.getText().toString().equals("") && mEditText3.getText().toString().equals("") && mEditText4.getText().toString().equals("")) {
+                if (mEditText1.getText().toString().equals("") || mEditText2.getText().toString().equals("") || mEditText3.getText().toString().equals("") || mEditText4.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "Please enter the numbers", Toast.LENGTH_SHORT).show();
                 } else {
                     int inputNumber1 = Integer.parseInt(mEditText1.getText().toString()) * 1000;
@@ -188,8 +188,9 @@ public class GameFragment extends Fragment {
                         Toast.makeText(mActivity, "Congratulations", Toast.LENGTH_SHORT).show();
 
                         // Save least mNumber to device
-                        if (mTotalPoint < mLeastPoint) {
+                        if (mTotalPoint < mLeastPoint || mLeastPoint == 0) {
                             mPreferenceManager.setLeastPoint(mTotalPoint);
+                            mLeastPoint = mTotalPoint;
                         }
 
                         showDialog();
