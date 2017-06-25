@@ -18,9 +18,13 @@ This is Game Application for Android Device.
 
 # Tools
 -Android Studio
+
 -Genymotion
+
 -Postman
+
 -Cygwin64
+
 -Git
 
 # Design
