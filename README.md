@@ -29,7 +29,7 @@ Win Screen
 
 1.Design function
 
-2.Desing UI
+2.Design UI
 
 3.Wire frame mapping
 
