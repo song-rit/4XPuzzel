@@ -31,23 +31,6 @@ public class GameDialogFragment extends DialogFragment {
     private String mParam1;
     private String mParam2;
 
-
-    private OnAddFriendListener callback;
-
-    public interface OnAddFriendListener {
-        public void onAddFriendSubmit(String friendEmail);
-    }
-
-
-    OnSubmitListener mListener;
-
-    interface OnSubmitListener {
-        void setOnSubmitListener(String str);
-    }
-
-    ;
-
-
     public GameDialogFragment() {
         // Required empty public constructor
     }
@@ -61,20 +44,9 @@ public class GameDialogFragment extends DialogFragment {
         return fragment;
     }
 
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-
-        callback = (OnAddFriendListener) getTargetFragment();
-
-    }
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.d("GameDialogFragment", "onCreateDialog");
-//        Dialog dialog = super.onCreateDialog(savedInstanceState);
         final Dialog dialog = new Dialog(getActivity());
         dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -95,8 +67,8 @@ public class GameDialogFragment extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        callback = (OnAddFriendListener) getTargetFragment();
-//        callback.onAddFriendSubmit("hello world");
+
+// Solve problem call back not active when dismiss dialog
         FragmentManager fm = getFragmentManager();
         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -107,8 +79,6 @@ public class GameDialogFragment extends DialogFragment {
         transaction.replace(R.id.fragment_main, fragment);
         transaction.addToBackStack(MenuFragment.S_TAG);
         transaction.commit();
-
-
 
     }
 

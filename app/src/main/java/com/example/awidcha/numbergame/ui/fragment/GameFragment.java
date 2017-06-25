@@ -32,7 +32,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class GameFragment extends Fragment implements GameDialogFragment.OnAddFriendListener {
+public class GameFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
@@ -121,7 +121,7 @@ public class GameFragment extends Fragment implements GameDialogFragment.OnAddFr
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDialog();
+
                 if (mEditText.getText().toString().equals("")) {
                     Toast.makeText(mActivity, "กรุณณาใส่ตัวเลข", Toast.LENGTH_SHORT).show();
                 } else {
@@ -130,7 +130,7 @@ public class GameFragment extends Fragment implements GameDialogFragment.OnAddFr
 
                     if (compare) {
                         Toast.makeText(mActivity, "คุณทายถูก", Toast.LENGTH_SHORT).show();
-//                        showDialog();
+                        showDialog();
 
                     } else {
                         if (inputNumber > mRandomNumber) {
@@ -206,14 +206,18 @@ public class GameFragment extends Fragment implements GameDialogFragment.OnAddFr
     private void showDialog() {
         FragmentManager fm = getFragmentManager();
         GameDialogFragment dialog = new GameDialogFragment();
+
         //Show GameDialogFragment
-        dialog.show(fm, "");
+        dialog.setCancelable(false);
+        dialog.show(fm, "End Game");
+
     }
 
     private void requestFail() {
+        mProgressDialog.dismiss();
         Toast.makeText(mActivity, "Fail", Toast.LENGTH_SHORT).show();
         FragmentManager manager = mActivity.getSupportFragmentManager();
-        manager.popBackStack();
+        manager.popBackStack(MenuFragment.S_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
     }
 
     private String getRandomRequestBody() {
@@ -236,15 +240,4 @@ public class GameFragment extends Fragment implements GameDialogFragment.OnAddFr
         mButtonOk = (Button) rootView.findViewById(R.id.button_ok);
         mEditText = (EditText) rootView.findViewById(R.id.edit_number);
     }
-
-    @Override
-    public void onAddFriendSubmit(String friendEmail) {
-        Toast.makeText(mActivity, friendEmail, Toast.LENGTH_SHORT).show();
-    }
-
-//    @Override
-//    public void onDismiss(DialogInterface dialog) {
-//        super.onDismiss(dialog);
-//        Log.d("sfsfsdf", "sdfsdfsdfsdf");
-//    }
 }
